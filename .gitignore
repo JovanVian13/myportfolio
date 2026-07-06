@@ -1,0 +1,12 @@
+# Dependencies
+node_modules/
+dist/
+.next/
+
+# Environment variables & secrets
+.env
+.env.local
+
+# Operating system files
+.DS_Store
+Thumbs.db

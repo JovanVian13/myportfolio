@@ -18,7 +18,7 @@ export class ProjectsService {
   async findAll() {
     return this.prisma.project.findMany({
       orderBy: {
-        createdAt: 'desc', // Show newest projects first
+        createdAt: 'desc',
       },
     });
   }

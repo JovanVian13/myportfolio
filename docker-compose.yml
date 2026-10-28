@@ -1,18 +1,52 @@
 # docker-compose.yml
-version: '3.8'
+# Not in use yet: local development runs against a locally installed Postgres via apps/nest-api/.env.
+# Start everything with: docker compose up --build
 
 services:
   postgres-db:
     image: postgres:15-alpine
     container_name: portfolio_postgres
     ports:
-      - "5432:5432"
+      # Host port 5433 so it doesn't clash with the local Postgres on 5432
+      - "5433:5432"
     environment:
       POSTGRES_USER: root
       POSTGRES_PASSWORD: supersecretpassword
       POSTGRES_DB: portfolio_db
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U root -d portfolio_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # One-off job: applies Prisma migrations, then exits
+  migrate:
+    build:
+      context: ./apps/nest-api
+      target: build
+    command: npx prisma migrate deploy
+    environment:
+      # Inside Docker, the database host is the service name and port 5432
+      DATABASE_URL: postgresql://root:supersecretpassword@postgres-db:5432/portfolio_db?schema=public
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+
+  nest-api:
+    build:
+      context: ./apps/nest-api
+      target: runtime
+    container_name: portfolio_api
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://root:supersecretpassword@postgres-db:5432/portfolio_db?schema=public
+      PORT: 3000
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
 
 volumes:
   pgdata:

@@ -1,0 +1,19 @@
+# Rebuilt inside the image
+node_modules
+dist
+
+# Secrets: pass these in through docker-compose instead
+.env
+.env.*
+
+# Not needed to run the app
+test
+coverage
+*.md
+*.bak
+.git
+.gitignore
+.prettierrc
+eslint.config.mjs
+Dockerfile
+.dockerignore

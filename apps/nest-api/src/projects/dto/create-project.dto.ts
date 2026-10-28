@@ -5,9 +5,17 @@ import {
   IsOptional,
   IsString,
   IsUrl,
+  IsUUID,
+  Matches,
 } from 'class-validator';
 
 export class CreateProjectDto {
+  // Lowercase words joined by single hyphens, e.g. "e-commerce-app"
+  @Matches(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, {
+    message: 'slug must be lowercase letters, numbers and single hyphens',
+  })
+  slug!: string;
+
   @IsString()
   @IsNotEmpty()
   title!: string;
@@ -16,10 +24,10 @@ export class CreateProjectDto {
   @IsNotEmpty()
   description!: string;
 
+  // IDs of existing skills that make up the tech stack
   @IsArray()
-  @IsString({ each: true })
-  @IsNotEmpty({ each: true })
-  techStack!: string[];
+  @IsUUID('4', { each: true })
+  skillIds!: string[];
 
   @IsOptional()
   @IsUrl()
@@ -36,4 +44,8 @@ export class CreateProjectDto {
   @IsOptional()
   @IsBoolean()
   featured?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  published?: boolean;
 }

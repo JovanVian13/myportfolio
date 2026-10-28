@@ -13,34 +13,45 @@ const errorFields = async (cls: new () => object, body: object) => {
 
 describe('Project DTOs', () => {
   const valid = {
+    slug: 'my-portfolio',
     title: 'Portfolio',
     description: 'My personal site',
-    techStack: ['NestJS', 'PostgreSQL'],
+    skillIds: ['1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed'],
     imageUrl: 'https://res.cloudinary.com/demo/image.png',
     githubUrl: 'https://github.com/me/portfolio',
     liveUrl: 'https://example.com',
     featured: true,
+    published: false,
   };
 
   it('accepts a valid create body', async () => {
     expect(await errorFields(CreateProjectDto, valid)).toEqual([]);
   });
 
-  it('requires title, description and techStack on create', async () => {
+  it('requires slug, title, description and skillIds on create', async () => {
     expect(await errorFields(CreateProjectDto, {})).toEqual(
-      expect.arrayContaining(['title', 'description', 'techStack']),
+      expect.arrayContaining(['slug', 'title', 'description', 'skillIds']),
     );
   });
+
+  it.each(['My-Portfolio', 'my portfolio', 'my--portfolio', '-portfolio'])(
+    'rejects malformed slug "%s"',
+    async (slug) => {
+      expect(await errorFields(CreateProjectDto, { ...valid, slug })).toEqual([
+        'slug',
+      ]);
+    },
+  );
 
   it('rejects wrong types and bad URLs', async () => {
     const fields = await errorFields(CreateProjectDto, {
       ...valid,
       title: '',
-      techStack: ['NestJS', 42],
+      skillIds: ['not-a-uuid'],
       githubUrl: 'not-a-url',
-      featured: 'yes',
+      published: 'yes',
     });
-    expect(fields.sort()).toEqual(['featured', 'githubUrl', 'techStack', 'title']);
+    expect(fields.sort()).toEqual(['githubUrl', 'published', 'skillIds', 'title']);
   });
 
   it('rejects unknown fields', async () => {

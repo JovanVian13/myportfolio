@@ -26,9 +26,10 @@ export class ProjectsController {
     return this.projectsService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.projectsService.findOne(id);
+  // Public pages look projects up by slug; admin writes use the id
+  @Get(':slug')
+  findBySlug(@Param('slug') slug: string) {
+    return this.projectsService.findBySlug(slug);
   }
 
   @Patch(':id')
